@@ -1,0 +1,14 @@
+#version 460
+layout(location = 0) in vec3 vertex_position;
+
+uniform vec3 material;
+uniform mat4 model;
+
+out vec3 fragColor;
+
+void main() {
+
+	fragColor = material;
+	gl_Position = model * vec4(vertex_position, 1.0f);
+
+}

@@ -4,6 +4,12 @@ project(${PN})
 
 add_executable(${PN} 
 	src/main.cpp 
+	src/values.cpp 
+	src/values.h
+	src/Control.cpp 
+	src/Control.h
+	src/EngineObjects/Interface.cpp 
+	src/EngineObjects/Interface.h
 	src/Shaders/Shader.cpp 
 	src/Shaders/Shader.h
 	src/Resources/ResourceManager.cpp
