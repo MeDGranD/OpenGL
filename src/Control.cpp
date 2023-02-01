@@ -24,19 +24,20 @@ void glfwKeyCallBack(GLFWwindow* window, int key, int scancode, int action, int 
 void do_movement() {
 
     GLfloat cameraSpeed = 5.0f * deltaTime;
-    if (keys[GLFW_KEY_W])
-        cameraPos += cameraSpeed * cameraFront;
-    if (keys[GLFW_KEY_S])
-        cameraPos -= cameraSpeed * cameraFront;
-    if (keys[GLFW_KEY_A])
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (keys[GLFW_KEY_D])
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (keys[GLFW_KEY_LEFT_SHIFT])
-        cameraPos += glm::vec3(0.0f, -cameraSpeed, 0.0f);
-    if (keys[GLFW_KEY_SPACE])
-        cameraPos += glm::vec3(0.0f, cameraSpeed, 0.0f);
-
+    if (!menu) {
+        if (keys[GLFW_KEY_W])
+            cameraPos += cameraSpeed * cameraFront;
+        if (keys[GLFW_KEY_S])
+            cameraPos -= cameraSpeed * cameraFront;
+        if (keys[GLFW_KEY_A])
+            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if (keys[GLFW_KEY_D])
+            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if (keys[GLFW_KEY_LEFT_SHIFT])
+            cameraPos += glm::vec3(0.0f, -cameraSpeed, 0.0f);
+        if (keys[GLFW_KEY_SPACE])
+            cameraPos += glm::vec3(0.0f, cameraSpeed, 0.0f);
+    }
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {

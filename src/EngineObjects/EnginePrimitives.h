@@ -125,6 +125,7 @@ class Primitive2D {
         void setScale(glm::vec2 UserScale);
         glm::vec2 getCords() { return cords; }
         glm::vec2 getSize() { return scale; }
+        glm::vec3 getMaterial() { return material; }
     private:
         GLuint VBO, VAO, Shader;
         glm::vec2 scale;

@@ -10,6 +10,7 @@
 #include "EngineObjects/EnginePrimitives.h"
 #include "EngineObjects/Interface.h"
 #include "Control.h"
+#include "EngineObjects/Text.h"
 
 std::set<Primitive3D*> Objects;
 std::set<Button*> ButtonCords;
@@ -52,6 +53,8 @@ int main(int argc, char** argv) {
         if (!pDefaultShaderProgramm) { std::cerr << "Can`t create shader programm!" << std::endl; return -1; }
         auto pDefault2DShaderProgramm = resourceManager.loadShader("Default2DShaderProgramm", "res/Shaders/2DvertexShader.txt", "res/Shaders/2DfragmentShader.txt");
         if (!pDefault2DShaderProgramm) { std::cerr << "Can`t create shader programm!" << std::endl; return -1; }
+        auto pDefaultTextShaderProgramm = resourceManager.loadShader("DeafultTextShader", "res/Shaders/TextvertexShader.txt", "res/Shaders/TextfragmentShader.txt");
+        if (!pDefaultTextShaderProgramm) { std::cerr << "Can`t create shader programm!" << std::endl; return -1; }
 
         GLuint lightVAO;
         GLuint VBO;
@@ -102,18 +105,22 @@ int main(int argc, char** argv) {
         b1.setCords(glm::vec2(50, 50));
         b1.setMaterial(glm::vec3(0.5f, 0.2f, 0.3f));
         b1.setSize(glm::vec2(100, 20));
+        b1.setString("Create Cube", 13, glm::vec3(1.0f, 1.0f, 1.0f));
         ButtonCords.insert(&b1);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         while (!glfwWindowShouldClose(window))
         {
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             glDisable(GL_DEPTH_TEST);
 
-            pDefault2DShaderProgramm->use();
-
             but.Draw(pDefault2DShaderProgramm);
-            b1.Draw(pDefault2DShaderProgramm);
+            
+            b1.Draw(pDefault2DShaderProgramm, pDefaultTextShaderProgramm);
 
             glEnable(GL_DEPTH_TEST);
 
@@ -124,17 +131,9 @@ int main(int argc, char** argv) {
 
             pDefaultShaderProgramm->use();
 
-            GLint lightPosLoc = glGetUniformLocation(pDefaultShaderProgramm->getID(), "lightPos");
-            GLint viewPosition = glGetUniformLocation(pDefaultShaderProgramm->getID(), "viewPos");
-            GLint lightColor = glGetUniformLocation(pDefaultShaderProgramm->getID(), "lightColor");
-            glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
-            glUniform3f(viewPosition, cameraPos.x, cameraPos.y, cameraPos.z);
-            glUniform3f(lightColor, 1.0f, 1.0f, 1.0f);
-
-            GLuint modelLoc = glGetUniformLocation(pDefaultShaderProgramm->getID(), "model");
-            GLuint viewLoc = glGetUniformLocation(pDefaultShaderProgramm->getID(), "view");
-            GLuint projectionLoc = glGetUniformLocation(pDefaultShaderProgramm->getID(), "projection");
-            GLuint specularLoc = glGetUniformLocation(pDefaultShaderProgramm->getID(), "specInt");
+            glUniform3f(glGetUniformLocation(pDefaultShaderProgramm->getID(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+            glUniform3f(glGetUniformLocation(pDefaultShaderProgramm->getID(), "viewPos"), cameraPos.x, cameraPos.y, cameraPos.z);
+            glUniform3f(glGetUniformLocation(pDefaultShaderProgramm->getID(), "lightColor"), 1.0f, 1.0f, 1.0f);
 
             c.Draw(pDefaultShaderProgramm);
             p.Draw(pDefaultShaderProgramm);
@@ -146,15 +145,15 @@ int main(int argc, char** argv) {
                 elem->Draw(pDefaultShaderProgramm);
 
             }
-
+            
             view = glm::mat4(1.0f);
             view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
             projection = glm::mat4(1.0f);
             projection = glm::perspective(glm::radians(fov), windowSizeX / windowSizeY, 0.1f, 800.0f);
 
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+            glUniformMatrix4fv(glGetUniformLocation(pDefaultShaderProgramm->getID(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(glGetUniformLocation(pDefaultShaderProgramm->getID(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
             
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
             
@@ -168,11 +167,8 @@ int main(int argc, char** argv) {
             projection = glm::mat4(1.0f);
             projection = glm::perspective(glm::radians(fov), windowSizeX / windowSizeY, 0.1f, 800.0f);
 
-            viewLoc = glGetUniformLocation(pLightShaderProgramm->getID(), "view");
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-            projectionLoc = glGetUniformLocation(pLightShaderProgramm->getID(), "projection");
-            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+            glUniformMatrix4fv(glGetUniformLocation(pLightShaderProgramm->getID(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(glGetUniformLocation(pLightShaderProgramm->getID(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
             
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -183,14 +179,9 @@ int main(int argc, char** argv) {
             model = glm::translate(model, lightPos);
             model = glm::scale(model, glm::vec3(0.2f));
 
-            modelLoc = glGetUniformLocation(pLightShaderProgramm->getID(), "model");
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-            viewLoc = glGetUniformLocation(pLightShaderProgramm->getID(), "view");
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-            projectionLoc = glGetUniformLocation(pLightShaderProgramm->getID(), "projection");
-            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+            glUniformMatrix4fv(glGetUniformLocation(pLightShaderProgramm->getID(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(glGetUniformLocation(pLightShaderProgramm->getID(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(glGetUniformLocation(pLightShaderProgramm->getID(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
             glBindVertexArray(lightVAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -222,7 +213,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
 
         if (lastX >= (windowSizeX - 1000) / 2 && lastX <= (windowSizeX - 1000) / 2 + 1000 && lastY >= 0 && lastY <= 562) { menu = false; glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
-        for (Button* elem : ButtonCords) { elem->Press(); }
+        if (menu) for (Button* elem : ButtonCords) { elem->Press(); }
 
     }
 

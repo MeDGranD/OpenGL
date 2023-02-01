@@ -32,7 +32,7 @@ void Primitive2D::Draw(std::shared_ptr<Shader::ShaderProgramm> Shad) {
     glm::vec2 DrawScale = glm::vec2(Userx, Usery);
 
     this->Shader = Shad->getID();
-
+    Shad->use();
     GLuint Color = glGetUniformLocation(this->Shader, "material");
     GLuint Model = glGetUniformLocation(this->Shader, "model");
     glUniform3f(Color, material.x, material.y, material.z);
